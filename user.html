@@ -1,0 +1,116 @@
+<?php
+    $dbConn_path = "meta\php\php_class_dbConn";
+    $error = array();
+    $uName; $uFN; $uMI; $uLN; $uT;
+    $queryUSubmit;
+
+    if(file_exists($dbConn_path)){
+        include($dbConn_path);
+    }else{
+        throw new expection('"'.$dbConn_path .'" is not a valid path');
+    }
+
+    $dbConn = new dbConn();
+
+    if(isset($_POST)){
+        try{
+            if(empty($_POST)){throw new Exception("Empty Form Submission");
+        }catch(Exception $e){
+            array_push($error,$e->getMessage());
+        }
+        
+        //check for issues
+        if(empty($error)){
+            if(!in_array("Empty Form Submission")){
+            if(isset($_POST['uName']) && !empty($_POST['uName'])){
+                $uName = $_POST['uName'];
+            }else{}
+            if(isset($POST['uPass']) && !empty($_POST['uPass'])){
+                $uPass = $_POST['uPass'];
+            }else{}
+            if(isset($_POST['uFN']) && !empty($_POST['uFN'])){
+                $uFN = $_POST['uFN'];   
+            }else{}
+            if(isset($_POST['uMI']) && !empty($_POST['uMI'])){
+                $uMI = $_POST['uMI'];
+            }else{}
+            if(isset($_POST['uLN']) && !empty($_POST['uLN'])){
+                $uLN = #_POST['uLN'];
+            }else{}
+            if(isset($_POST['uT']) && !empty($_POST['uT'])){
+                $uT = $_POST['uT'];
+            }else{}
+        }
+            
+        //check for issues    
+        if(empty($error)){
+            $queryUSubmit = "";
+        }
+    }
+
+?>
+
+<html>
+    <head></head>
+    <body>
+        <form action="" method="POST">
+            <label for="uName">User Name:</label> <input type="text" name="uName" id="uName" value="<?php print_r($uName); ?>" /><br />
+            <label for="uPass">Password:</label> <input type="text" name="uPass" id="uPass" value="" /><br />
+            <label for="uFN">First Name</label> <input type="text" name="uFN" id="uFN" value="<?php print_r($uFN) ?>" /><br />
+            <label for="uMI">Middle Initial</label> <input type="text" name="uMI" id="uMI" value="<?php print_r(uMI) ?>" size="1" /><br />
+            <label for="uLN">Last Name:</label> <input type="text" name="uLN" id="uLN" value="<?php print_r($uLN) ?>" /><br />
+            <label for="uT">User Type:</label>
+                <select name="uT" id="uT">
+
+<?php
+
+    $queryUType = "SELECT * FROM `user_type`";
+    $dbConn->prepare($queryUType);
+    $dbConn->execute();
+
+    foreach($dbConn->fetchAll($queryUType) as $UTrow){
+        echo("<option value='".$UTrow[0]."'>".$UTrow[1]."</option>");
+    }
+
+?>
+                </select><br />
+                <input type="submit" value="Add User" />
+        </form>
+        
+        <table>
+            <tr>
+                <th>Full Name</th>
+                <th>User Type</th>
+                <th>User Initials</th>
+            </tr>
+
+<?php
+
+    $queryUserDetail = "
+        SELECT
+        concat_ws(
+        	`ud`.last_name,", "
+            +`ud`.first_name
+            +IF(LENGTH(`ud`.middle_initial)," "+`ud`.middle_initial,NULL)
+        ) AS 'fullName',
+        `ut`.type_name AS 'userType',
+        `u`.username AS 'userName',
+        `ud`.initials AS 'userInitials'
+        FROM `user_detail` AS ud left JOIN (`user_type` AS ut, `users` AS u)
+        ON ut.ut_id = u.u_id
+        AND ud.u_id = u.u_id;
+";
+    
+    foreach($dbConn->query($queryUserDetail) as $UDrow){
+        print_r("<tr>");
+        print_r("<td>"$UDrow['fullName']."</td>");
+        print_r("<td>".$UDrow['userType']."</td>");
+        print_r("<td>".$UDrow['userInitials']."</td>");
+        print_r("</tr>");
+    }
+
+?>
+
+        </table>
+    </body>
+</html>
